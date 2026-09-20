@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+ * Dark is the selected mode, not an inverted light theme. Surface, ink and
+ * mark colors are the validated dark steps from the reference palette, checked
+ * against this page's own surface rather than the palette's default one.
+ */
+@theme {
+  --color-plane: #0d0d0d;
+  --color-surface: #141416;
+  --color-raised: #1a1a19;
+
+  --color-ink: #ffffff;
+  --color-ink-2: #c3c2b7;
+  --color-ink-muted: #898781;
+
+  --color-line: #2c2c2a;
+  --color-baseline: #383835;
+
+  /* Marks: the audited brand is emphasised, competitors recede. */
+  --color-mark: #3987e5;
+  --color-mark-rival: #626260;
+
+  /* Status. Always shipped with a label, never carrying meaning by color. */
+  --color-good: #0ca30c;
+  --color-warning: #fab219;
+  --color-serious: #ec835a;
+  --color-critical: #d03b3b;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-plane);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bars grow from zero on first paint; the run already feels live without it. */
+@keyframes grow-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.bar-grow {
+  transform-origin: left center;
+  animation: grow-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up { animation: fade-up 0.28s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-grow, .fade-up { animation: none; }
+}
