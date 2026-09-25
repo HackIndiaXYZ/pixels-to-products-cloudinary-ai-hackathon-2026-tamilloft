@@ -1,4 +1,4 @@
-# Echo â€” AI visibility auditor
+# Echo — AI visibility auditor
 
 *Do AI models recommend your brand? Find out before your competitors do.*
 
@@ -7,7 +7,7 @@ measure whether they appear in that answer. Echo measures it.
 
 Give it a domain. Echo researches what the company actually sells, writes the
 questions a real buyer would ask, asks them with no mention of the brand, reads
-every answer, and reports the share of the conversation you own â€” against the
+every answer, and reports the share of the conversation you own — against the
 competitors who took the rest.
 
 Built for the AI-First Startup Hackathon by **TamilLoft**.
@@ -16,17 +16,17 @@ Built for the AI-First Startup Hackathon by **TamilLoft**.
 
 | Step | What happens | Who does it |
 |---|---|---|
-| 1. Profile | Fetches the company's own pages, then structures them: category, audience, real competitors | direct fetch + Claude |
-| 2. Queries | Writes ~24 buyer questions, split into unbranded and branded | Claude |
-| 3. Probe | Asks each question with **no system prompt and no mention of the brand** | Claude |
-| 4. Extract | Reads each answer and records what it said â€” who was named, in what order, how framed | Claude |
+| 1. Profile | Fetches the company's own pages, then structures them: category, audience, real competitors | direct fetch + model |
+| 2. Queries | Writes buyer questions (12 by default), split into unbranded and branded | model |
+| 3. Probe | Asks each question with **no system prompt and no mention of the brand** | model |
+| 4. Extract | Reads each answer and records what it said — who was named, in what order, how framed | model |
 | 5. Score | Computes visibility, share of voice, average rank, accuracy | **Plain TypeScript** |
-| 6. Diagnose | Explains the cause and prescribes specific fixes | Claude |
+| 6. Diagnose | Explains the cause and prescribes specific fixes | model |
 
 ### Two design decisions worth knowing
 
 **Probes are uninstructed.** `src/lib/audit/probe.ts` sends the buyer's question
-and nothing else â€” no system prompt, no profile, no hint that a brand is being
+and nothing else — no system prompt, no profile, no hint that a brand is being
 measured. The moment a probe knows which brand matters, the answer is
 contaminated and the score is worthless. Everything Echo claims rests on that
 function staying bare.
@@ -82,11 +82,11 @@ An audit makes three kinds of call, in very different volumes:
 | Role | Calls | Job | Default |
 |---|---|---|---|
 | `analyst` | 3 | Profile the company, write the queries, diagnose | `gemini-pro-latest` |
-| `reader` | ~24 | Record what one answer said | `gemini-flash-latest` |
-| `probe` | ~24 | Simulate a buyer asking a question | `gemini-flash-latest` |
+| `reader` | ~2 | Read a batch of up to 6 answers at once | `gemini-flash-lite-latest` |
+| `probe` | ~12 | Simulate a buyer asking a question | `gemini-flash-latest` |
 
 Only `analyst` benefits from a Pro model, and free-tier Pro quotas are small —
-so routing the other ~48 calls to flash is what makes an audit runnable at all.
+so routing the other ~14 calls to flash models is what makes an audit runnable at all.
 A fast model is also the *more faithful* probe, since that is what real buyers
 get.
 
@@ -100,10 +100,20 @@ No credentials to hand? Click **view a sample report** on the landing page. It
 replays a stored audit through the real UI and the real scoring code. The
 companies in it are invented and the UI says so.
 
-An audit runs ~24 probes at concurrency 6 and takes roughly a minute. Results
-stream as they land over server-sent events.
+An audit runs 12 probes by default (`ECHO_QUERY_COUNT`), three at a time, and
+takes two to three minutes on a free-tier Gemini key. Results stream as they
+land over server-sent events.
+
+## Tests
+
+```bash
+npm test
+```
+
+Covers the scoring step (`src/lib/audit/score.ts`), since every figure in the
+report comes from it. No API calls are made.
 
 ## Stack
 
-Next.js 16 (App Router) Â· TypeScript Â· Tailwind v4 Â· Claude Opus 5 via
-`@anthropic-ai/sdk` Â· zod-validated structured outputs
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · Gemini via `@google/genai`
+(Claude API and Bedrock also supported) · zod-validated structured outputs

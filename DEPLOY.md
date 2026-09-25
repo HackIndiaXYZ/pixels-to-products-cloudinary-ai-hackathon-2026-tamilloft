@@ -1,8 +1,8 @@
 # Deploying Echo
 
-Two routes. The CLI one needs no GitHub access, so it works today.
+Two routes. The CLI one needs no GitHub access.
 
-## Route A — Vercel CLI (works now)
+## Route A — Vercel CLI
 
 Deploys straight from this folder. No repository required.
 
@@ -28,17 +28,9 @@ deploy is the reliable way to be sure they are attached:
 npx vercel --prod
 ```
 
-## Route B — GitHub integration (once you have push access)
+## Route B — GitHub integration
 
-The repository `HackIndiaXYZ/…tamilloft` is currently **read-only** for the
-`KPRAHUL1` account, so this is blocked until a collaborator invite lands. Once
-it does:
-
-```bash
-git push -u origin main
-```
-
-Then at vercel.com: **Add New → Project → import the repo**, set the same
+The code is already on `main` at `HackIndiaXYZ/…tamilloft`. At vercel.com: **Add New → Project → import the repo**, set the same
 environment variables, and deploy. Every later push deploys automatically,
 which is the better setup for the rest of the hackathon.
 

@@ -8,9 +8,9 @@ reconstructed afterwards.
 | Tool | Role |
 |---|---|
 | Claude Opus 5 via Claude Code | Product strategy, architecture, and essentially all source code |
-| Claude Opus 5 via `@anthropic-ai/sdk` | The product's own runtime â€” every pipeline step |
+| Claude Opus 5 via `@anthropic-ai/sdk` | The product's own runtime — every pipeline step |
 
-## Session 1 â€” idea selection and build kickoff
+## Session 1 — idea selection and build kickoff
 
 **Human input:** the hackathon brief, a team situation (solo, 72h), and a
 request to choose a project and start.
@@ -20,15 +20,15 @@ request to choose a project and start.
 1. **Competitive analysis of the brief.** Predicted which ideas ~881 teams
    would flood (study-buddy chatbots, resume builders, symptom checkers) and
    argued that differentiation beats polish at that field size.
-2. **Eighteen candidate ideas** generated across five strategic angles â€”
+2. **Eighteen candidate ideas** generated across five strategic angles —
    adversarial agents, money-recovery agents, agents for the AI era itself,
-   Tamil/India language moats, and time-based agents â€” each rated for crowding,
+   Tamil/India language moats, and time-based agents — each rated for crowding,
    solo-72h feasibility, and demo impact.
 3. **Selection.** Echo was chosen for the best ratio of feasibility to
    memorability, and because it is the most AI-native idea in the set: the
    product could not have existed before LLMs became a buying channel.
 4. **Architecture.** The six-step pipeline, and the two decisions the product's
-   credibility rests on â€” uninstructed probes, and scoring in code rather than
+   credibility rests on — uninstructed probes, and scoring in code rather than
    by model.
 5. **Implementation.** All of `src/` written by Claude.
 
@@ -43,8 +43,8 @@ direction.
   "compute the metric" (TypeScript) so no reported figure is model-generated.
 - **Code-enforced query validity.** Unbranded queries are re-validated in code
   rather than trusted to the prompt that produced them.
-- **Probe effort set to `low` deliberately.** A fidelity choice â€” a real
-  consumer gets a quick answer, not a deliberated report â€” that also keeps a
+- **Probe effort set to `low` deliberately.** A fidelity choice — a real
+  consumer gets a quick answer, not a deliberated report — that also keeps a
   24-query run inside serverless time limits.
 - **Palette validated, not eyeballed.** Chart colors were run through a
   contrast/colorblind validator; the competitor gray was lifted from `#4a4a47`
