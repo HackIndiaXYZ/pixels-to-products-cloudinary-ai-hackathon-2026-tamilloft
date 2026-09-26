@@ -1,3 +1,4 @@
+import { Gauge } from "lucide-react";
 import type { Scores } from "@/lib/schemas";
 
 type Band = {
@@ -37,7 +38,8 @@ export function ScoreCard({ scores, brand }: { scores: Scores; brand: string }) 
 
   return (
     <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-      <h2 className="text-ink-muted text-xs tracking-widest uppercase">
+      <h2 className="text-ink-muted flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+        <Gauge size={14} className="text-mark" aria-hidden />
         AI visibility score
       </h2>
 

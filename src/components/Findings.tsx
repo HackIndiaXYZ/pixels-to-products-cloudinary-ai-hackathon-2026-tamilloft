@@ -1,3 +1,4 @@
+import { ListChecks, Lightbulb, Target } from "lucide-react";
 import type { Diagnosis, Scores } from "@/lib/schemas";
 
 const SEVERITY: Record<string, { color: string; glyph: string }> = {
@@ -17,7 +18,8 @@ export function Findings({
   return (
     <div className="flex flex-col gap-6">
       <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-        <h2 className="text-ink-muted text-xs tracking-widest uppercase">
+        <h2 className="text-ink-muted flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+          <Lightbulb size={14} className="text-mark" aria-hidden />
           Diagnosis
         </h2>
         <p className="text-ink mt-3 text-xl leading-snug">{diagnosis.headline}</p>
@@ -51,7 +53,10 @@ export function Findings({
 
       {scores.blindSpots.length > 0 ? (
         <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-          <h2 className="text-ink text-lg">Questions you lost</h2>
+          <h2 className="text-ink flex items-center gap-2 text-lg">
+            <Target size={18} className="text-mark" aria-hidden />
+            Questions you lost
+          </h2>
           <p className="text-ink-muted mt-1 text-sm">
             The model answered, named somebody, and it was not you.
           </p>
@@ -69,7 +74,10 @@ export function Findings({
       ) : null}
 
       <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-        <h2 className="text-ink text-lg">What to do</h2>
+        <h2 className="text-ink flex items-center gap-2 text-lg">
+          <ListChecks size={18} className="text-mark" aria-hidden />
+          What to do
+        </h2>
         <ol className="mt-5 flex flex-col gap-5">
           {[...diagnosis.fixes]
             .sort((a, b) => a.priority - b.priority)

@@ -1,10 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export interface ReportTab<Id extends string> {
   id: Id;
   label: string;
+  icon: LucideIcon;
   /** The tab's headline number, so the tab row doubles as the report summary. */
   metric: string;
   hint: string;
@@ -52,7 +54,8 @@ export function ReportTabs<Id extends string>({
                 selected ? "border-mark bg-surface" : "border-line bg-plane hover:border-baseline"
               }`}
             >
-              <div className="text-ink-muted flex items-center gap-2 text-xs tracking-widest uppercase">
+              <div className="text-ink-muted flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+                <tab.icon size={14} className={selected ? "text-mark" : ""} aria-hidden />
                 {tab.label}
                 {tab.busy ? <span className="bg-mark h-1.5 w-1.5 animate-pulse rounded-full" aria-label="in progress" /> : null}
               </div>

@@ -1,3 +1,4 @@
+import { ChartBar } from "lucide-react";
 import type { Scores } from "@/lib/schemas";
 
 /**
@@ -18,7 +19,10 @@ export function ShareOfVoice({
 
   return (
     <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-      <h2 className="text-ink text-lg">Who the model recommends instead</h2>
+      <h2 className="text-ink flex items-center gap-2 text-lg">
+        <ChartBar size={18} className="text-mark" aria-hidden />
+        Who the model recommends instead
+      </h2>
       <p className="text-ink-muted mt-1 text-sm">
         Mentions across {totalQuestions} unbranded buying questions.
       </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { MessageSquareQuote } from "lucide-react";
 import { useState } from "react";
 import type { ProbeResult } from "@/lib/schemas";
 
@@ -23,7 +24,10 @@ export function ProbeFeed({
   return (
     <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-ink text-lg">Questions asked</h2>
+        <h2 className="text-ink flex items-center gap-2 text-lg">
+          <MessageSquareQuote size={18} className="text-mark" aria-hidden />
+          Questions asked
+        </h2>
         <span className="text-ink-muted text-sm tabular-nums">
           {landed} of {total}
         </span>

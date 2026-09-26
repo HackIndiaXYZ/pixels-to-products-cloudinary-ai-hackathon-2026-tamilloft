@@ -1,6 +1,21 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import {
+  Building2,
+  CircleAlert,
+  CirclePlay,
+  Globe,
+  Info,
+  LoaderCircle,
+  Images,
+  MessageSquareQuote,
+  Radar,
+  Sparkles,
+} from "lucide-react";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+import { HowItWorks } from "@/components/HowItWorks";
 import { ScoreCard } from "@/components/ScoreCard";
 import { ShareOfVoice } from "@/components/ShareOfVoice";
 import { ProbeFeed } from "@/components/ProbeFeed";
@@ -244,6 +259,28 @@ export default function Home() {
     setRunning(false);
   }, [running]);
 
+  /** Back to the landing view. Ignored mid-run, so a stray click cannot kill an audit. */
+  const reset = useCallback(() => {
+    if (running) return;
+    abortRef.current?.abort();
+    setDomain("");
+    setError(null);
+    setStatus(null);
+    setProfile(null);
+    setQueries([]);
+    setProbes([]);
+    setScores(null);
+    setDiagnosis(null);
+    setIsSample(false);
+    setMedia([]);
+    setMediaExpected(0);
+    setMediaScores(null);
+    setMediaNotes([]);
+    setMediaStarted(false);
+    setTab("answers");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [running]);
+
   const started = running || probes.length > 0 || Boolean(error);
 
   const answered = probes.filter(Boolean).length;
@@ -251,189 +288,240 @@ export default function Home() {
   const imagesBusy = mediaStarted && !mediaScores && mediaExpected > 0;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:py-20">
-      <header>
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-ink text-2xl tracking-tight">Echo</h1>
-          <span className="text-ink-muted text-sm">AI visibility auditor, powered by Cloudinary</span>
-        </div>
-        <p className="text-ink-2 mt-3 max-w-prose">
-          Buyers ask AI what to buy before they ask Google. Echo measures
-          whether the answer includes you, and runs your homepage images
-          through Cloudinary&apos;s AI to see whether they tell the same story.
-        </p>
-      </header>
+    <>
+      <SiteHeader onSample={() => void runSample()} onHome={reset} busy={running} />
 
-      <form
-        className="mt-8"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void run();
-        }}
-      >
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            value={domain}
-            onChange={(event) => setDomain(event.target.value)}
-            placeholder="yourcompany.com"
-            disabled={running}
-            spellCheck={false}
-            autoComplete="off"
-            className="border-line bg-surface text-ink placeholder:text-ink-muted focus:border-mark min-w-0 flex-1 rounded-md border px-4 py-3 outline-none disabled:opacity-60"
-          />
-          <button
-            type="submit"
-            disabled={running || !domain.trim()}
-            className="bg-mark rounded-md px-5 py-3 font-medium text-white disabled:opacity-40"
+      <main>
+        <section id="audit" className="relative scroll-mt-14 overflow-hidden">
+          <div className="echo-rings pointer-events-none absolute inset-0" aria-hidden />
+          <div className="hero-glow pointer-events-none absolute inset-0" aria-hidden />
+
+          <div
+            className={`rise relative mx-auto w-full max-w-3xl px-4 text-center ${
+              started ? "pt-10 pb-2" : "pt-20 pb-4 sm:pt-28"
+            }`}
           >
-            {running ? "Auditing…" : "Run audit"}
-          </button>
+            {!started ? (
+              <>
+                <p className="border-line bg-surface/70 text-ink-2 mx-auto inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11px] tracking-wider uppercase">
+                  <Sparkles size={12} className="text-mark" aria-hidden />
+                  AI visibility audit · words and images
+                </p>
+                <h1 className="text-ink mx-auto mt-6 max-w-2xl font-serif text-5xl leading-[1.05] sm:text-6xl">
+                  Is AI recommending your brand, or{" "}
+                  <em className="text-mark">someone else&apos;s?</em>
+                </h1>
+                <p className="text-ink-2 mx-auto mt-5 max-w-xl text-base leading-relaxed sm:text-lg">
+                  Buyers ask AI what to buy before they ask Google. Echo measures
+                  whether the answer includes you, and runs your homepage images
+                  through Cloudinary&apos;s AI to fix how machines see them.
+                </p>
+              </>
+            ) : null}
+
+            <form
+              className={`mx-auto max-w-xl ${started ? "" : "mt-9"}`}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void run();
+              }}
+            >
+              <div className="border-line bg-surface focus-within:border-mark flex items-center gap-2 rounded-xl border p-1.5 shadow-[0_8px_40px_-12px_rgb(57_135_229/0.35)] transition-colors">
+                <Globe size={18} className="text-ink-muted ml-2.5 shrink-0" aria-hidden />
+                <input
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  placeholder="yourcompany.com"
+                  aria-label="Domain to audit"
+                  disabled={running}
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="text-ink placeholder:text-ink-muted min-w-0 flex-1 bg-transparent py-2.5 outline-none disabled:opacity-60"
+                />
+                <button
+                  type="submit"
+                  disabled={running || !domain.trim()}
+                  className="bg-mark flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                >
+                  {running ? (
+                    <LoaderCircle size={16} className="animate-spin" aria-hidden />
+                  ) : (
+                    <Radar size={16} aria-hidden />
+                  )}
+                  {running ? "Auditing…" : "Run audit"}
+                </button>
+              </div>
+
+              {!started ? (
+                <div className="text-ink-muted mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
+                  <span>Try</span>
+                  {EXAMPLES.map((example) => (
+                    <button
+                      key={example}
+                      type="button"
+                      onClick={() => setDomain(example)}
+                      className="border-line hover:border-baseline hover:text-ink-2 rounded-md border px-2 py-0.5 font-mono text-xs"
+                    >
+                      {example}
+                    </button>
+                  ))}
+                  <span className="text-ink-muted/60">or</span>
+                  <button
+                    type="button"
+                    onClick={() => void runSample()}
+                    className="text-mark flex items-center gap-1.5 hover:underline"
+                  >
+                    <CirclePlay size={15} aria-hidden />
+                    view a sample report
+                  </button>
+                </div>
+              ) : null}
+            </form>
+          </div>
+        </section>
+
+        <div className="mx-auto w-full max-w-3xl px-4">
+          {isSample ? (
+            <p className="border-line bg-surface text-ink-2 mt-6 flex gap-3 rounded-lg border p-4 text-sm">
+              <Info size={16} className="text-mark mt-0.5 shrink-0" aria-hidden />
+              <span>
+                <span className="text-ink">Sample report.</span> Brightloom and every
+                competitor named here are invented, and these answers were not
+                measured — this is a worked example of the output. The images are
+                real assets on Cloudinary&apos;s public demo cloud, transformed live.
+                The scores below are still computed by the real scoring code.
+              </span>
+            </p>
+          ) : null}
+
+          {status ? (
+            <p className="text-ink-2 mt-6 flex items-center justify-center gap-2 text-sm">
+              <LoaderCircle size={15} className="text-mark animate-spin" aria-hidden />
+              {status}
+            </p>
+          ) : null}
+
+          {error ? (
+            <p
+              className="border-line bg-surface mt-6 flex gap-3 rounded-lg border p-4 text-sm"
+              style={{ color: "var(--color-critical)" }}
+              role="alert"
+            >
+              <CircleAlert size={16} className="mt-0.5 shrink-0" aria-hidden />
+              {error}
+            </p>
+          ) : null}
+
+          {profile ? (
+            <section className="border-line bg-surface fade-up mt-6 rounded-lg border p-5">
+              <div className="flex items-center gap-3">
+                <span className="bg-mark/10 text-mark flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                  <Building2 size={18} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-ink font-medium">{profile.brand}</h2>
+                  <p className="text-ink-muted font-mono text-xs">{profile.category}</p>
+                </div>
+              </div>
+              <p className="text-ink-2 mt-3 text-sm">{profile.description}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-ink-muted mr-1">Measured against</span>
+                {profile.competitors.map((competitor) => (
+                  <span key={competitor} className="border-line text-ink-2 rounded-md border px-2 py-0.5">
+                    {competitor}
+                  </span>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {profile || mediaStarted ? (
+            <ReportTabs
+              active={tab}
+              onChange={setTab}
+              tabs={[
+                {
+                  id: "answers",
+                  label: "AI answers",
+              icon: MessageSquareQuote,
+                  metric: scores
+                    ? `${scores.visibilityScore}% visible`
+                    : queries.length > 0
+                      ? `${answered} of ${queries.length}`
+                      : "—",
+                  hint: scores
+                    ? `in ${scores.unbrandedHits} of ${scores.unbrandedTotal} unbranded questions`
+                    : queries.length > 0
+                      ? "questions answered"
+                      : running
+                        ? "writing the questions"
+                        : "not run",
+                  busy: running && !diagnosis,
+                  content: (
+                    <>
+                      {scores && profile ? (
+                        <ScoreCard scores={scores} brand={profile.brand} />
+                      ) : null}
+
+                      {scores ? (
+                        <ShareOfVoice
+                          scores={scores}
+                          totalQuestions={scores.unbrandedTotal}
+                        />
+                      ) : null}
+
+                      {diagnosis && scores ? (
+                        <Findings diagnosis={diagnosis} scores={scores} />
+                      ) : null}
+
+                      {queries.length > 0 && profile ? (
+                        <ProbeFeed
+                          results={probes}
+                          total={queries.length}
+                          brand={profile.brand}
+                        />
+                      ) : null}
+                    </>
+                  ),
+                },
+                {
+                  id: "images",
+                  label: "Images · Cloudinary",
+              icon: Images,
+                  metric: mediaScores
+                    ? `${mediaScores.savedPct}% lighter`
+                    : imagesBusy
+                      ? `${imagesReady} of ${mediaExpected}`
+                      : "—",
+                  hint: mediaScores
+                    ? `${mediaScores.missingAlt} of ${mediaScores.audited} images missing alt text`
+                    : imagesBusy
+                      ? "images processed"
+                      : mediaNotes[0] ?? "collecting images",
+                  busy: imagesBusy,
+                  content: mediaStarted ? (
+                    <MediaAudit
+                      assets={media}
+                      expected={mediaExpected}
+                      scores={mediaScores}
+                      notes={mediaNotes}
+                    />
+                  ) : (
+                    <p className="text-ink-2 text-sm">Collecting the homepage images…</p>
+                  ),
+                },
+              ]}
+            />
+          ) : null}
+
         </div>
 
-        {!started ? (
-          <div className="text-ink-muted mt-3 flex flex-wrap items-center gap-2 text-sm">
-            <span>Try</span>
-            {EXAMPLES.map((example) => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => setDomain(example)}
-                className="border-line hover:border-baseline hover:text-ink-2 rounded border px-2 py-0.5"
-              >
-                {example}
-              </button>
-            ))}
-            <span className="text-ink-muted/60">or</span>
-            <button
-              type="button"
-              onClick={() => void runSample()}
-              className="border-line hover:border-baseline hover:text-ink-2 rounded border px-2 py-0.5"
-            >
-              view a sample report
-            </button>
-          </div>
-        ) : null}
-      </form>
+        <div className="mx-auto w-full max-w-5xl px-4">
+          <HowItWorks />
+        </div>
+      </main>
 
-      {isSample ? (
-        <p className="border-line bg-surface text-ink-2 mt-6 rounded-md border p-4 text-sm">
-          <span className="text-ink">Sample report.</span> Brightloom and every
-          competitor named here are invented, and these answers were not
-          measured — this is a worked example of the output. The images are
-          real assets on Cloudinary&apos;s public demo cloud, transformed live. The
-          scores below are still computed by the real scoring code.
-        </p>
-      ) : null}
-
-      {status ? (
-        <p className="text-ink-2 mt-6 flex items-center gap-2 text-sm">
-          <span className="bg-mark h-1.5 w-1.5 animate-pulse rounded-full" />
-          {status}
-        </p>
-      ) : null}
-
-      {error ? (
-        <p
-          className="border-line bg-surface mt-6 rounded-md border p-4 text-sm"
-          style={{ color: "var(--color-critical)" }}
-        >
-          {error}
-        </p>
-      ) : null}
-
-      {profile ? (
-        <section className="border-line bg-surface mt-6 rounded-lg border p-5 fade-up">
-          <h2 className="text-ink">{profile.brand}</h2>
-          <p className="text-ink-2 mt-1 text-sm">{profile.description}</p>
-          <p className="text-ink-muted mt-3 text-xs">
-            Measured against {profile.competitors.join(", ")}
-          </p>
-        </section>
-      ) : null}
-
-      {profile || mediaStarted ? (
-        <ReportTabs
-          active={tab}
-          onChange={setTab}
-          tabs={[
-            {
-              id: "answers",
-              label: "AI answers",
-              metric: scores
-                ? `${scores.visibilityScore}% visible`
-                : queries.length > 0
-                  ? `${answered} of ${queries.length}`
-                  : "—",
-              hint: scores
-                ? `in ${scores.unbrandedHits} of ${scores.unbrandedTotal} unbranded questions`
-                : queries.length > 0
-                  ? "questions answered"
-                  : running
-                    ? "writing the questions"
-                    : "not run",
-              busy: running && !diagnosis,
-              content: (
-                <>
-                  {scores && profile ? (
-                    <ScoreCard scores={scores} brand={profile.brand} />
-                  ) : null}
-
-                  {scores ? (
-                    <ShareOfVoice
-                      scores={scores}
-                      totalQuestions={scores.unbrandedTotal}
-                    />
-                  ) : null}
-
-                  {diagnosis && scores ? (
-                    <Findings diagnosis={diagnosis} scores={scores} />
-                  ) : null}
-
-                  {queries.length > 0 && profile ? (
-                    <ProbeFeed
-                      results={probes}
-                      total={queries.length}
-                      brand={profile.brand}
-                    />
-                  ) : null}
-                </>
-              ),
-            },
-            {
-              id: "images",
-              label: "Images · Cloudinary",
-              metric: mediaScores
-                ? `${mediaScores.savedPct}% lighter`
-                : imagesBusy
-                  ? `${imagesReady} of ${mediaExpected}`
-                  : "—",
-              hint: mediaScores
-                ? `${mediaScores.missingAlt} of ${mediaScores.audited} images missing alt text`
-                : imagesBusy
-                  ? "images processed"
-                  : mediaNotes[0] ?? "collecting images",
-              busy: imagesBusy,
-              content: mediaStarted ? (
-                <MediaAudit
-                  assets={media}
-                  expected={mediaExpected}
-                  scores={mediaScores}
-                  notes={mediaNotes}
-                />
-              ) : (
-                <p className="text-ink-2 text-sm">Collecting the homepage images…</p>
-              ),
-            },
-          ]}
-        />
-      ) : null}
-
-      <footer className="text-ink-muted border-line mt-16 border-t pt-6 text-xs">
-        Probes run with no system prompt and no mention of the brand. Every
-        figure above is computed in code from those answers, not generated by a
-        model. Images are uploaded, analyzed, transformed and delivered by
-        Cloudinary.
-      </footer>
-    </main>
+      <SiteFooter />
+    </>
   );
 }

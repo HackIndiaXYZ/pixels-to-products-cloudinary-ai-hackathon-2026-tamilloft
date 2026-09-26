@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, Crop, Images, TriangleAlert, WandSparkles } from "lucide-react";
 import { useState } from "react";
 import type { MediaAsset, MediaScores } from "@/lib/schemas";
 
@@ -64,7 +65,7 @@ function Generated({
           className="border-line hover:border-mark text-ink-2 hover:text-ink flex w-full flex-col items-center justify-center gap-1 rounded border border-dashed px-2 text-center text-xs"
           style={{ aspectRatio: ratio }}
         >
-          <span aria-hidden className="text-mark text-base">✦</span>
+          <WandSparkles size={16} className="text-mark" aria-hidden />
           {action}
         </button>
         <div className="text-ink-muted mt-1 text-xs">{label}</div>
@@ -123,12 +124,12 @@ function AssetCard({ asset }: { asset: MediaAsset }) {
         <div className="min-w-0 text-sm">
           {asset.siteAlt ? (
             <p className="text-ink-2">
-              <span style={{ color: "var(--color-good)" }} aria-hidden>● </span>
+              <CircleCheck size={14} className="mr-1.5 inline -translate-y-px" style={{ color: "var(--color-good)" }} aria-hidden />
               Alt text: <span className="text-ink">“{asset.siteAlt}”</span>
             </p>
           ) : (
             <p style={{ color: "var(--color-serious)" }}>
-              <span aria-hidden>▲ </span>No alt text. AI crawlers and screen readers see nothing here.
+              <TriangleAlert size={14} className="mr-1.5 inline -translate-y-px" aria-hidden />No alt text. AI crawlers and screen readers see nothing here.
             </p>
           )}
 
@@ -168,7 +169,8 @@ function AssetCard({ asset }: { asset: MediaAsset }) {
       </div>
 
       {/* Column widths follow the aspect ratios, so every tile in a row is the same height. */}
-      <h3 className="text-ink-muted mt-5 text-xs tracking-widest uppercase">
+      <h3 className="text-ink-muted mt-5 flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+        <Crop size={13} aria-hidden />
         Smart crops · g_auto
       </h3>
       <div className="mt-2 grid grid-cols-[1.9fr_1fr] gap-3">
@@ -176,7 +178,8 @@ function AssetCard({ asset }: { asset: MediaAsset }) {
         <Preview href={asset.variants.square} src={asset.variants.square} label="Square 1080×1080" ratio="1 / 1" />
       </div>
 
-      <h3 className="text-ink-muted mt-5 text-xs tracking-widest uppercase">
+      <h3 className="text-ink-muted mt-5 flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+        <WandSparkles size={13} aria-hidden />
         Generative AI fixes
       </h3>
       <div className="mt-2 grid grid-cols-[1.9fr_1fr_1fr] gap-3">
@@ -218,7 +221,8 @@ export function MediaAudit({
 
   return (
     <section className="border-line bg-surface rounded-lg border p-6 sm:p-8">
-      <h2 className="text-ink-muted text-xs tracking-widest uppercase">
+      <h2 className="text-ink-muted flex items-center gap-2 font-mono text-xs tracking-widest uppercase">
+        <Images size={14} className="text-mark" aria-hidden />
         Image audit · via Cloudinary
       </h2>
       <p className="text-ink-2 mt-3 max-w-prose text-sm">
