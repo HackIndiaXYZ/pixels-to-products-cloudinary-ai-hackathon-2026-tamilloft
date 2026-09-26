@@ -4,6 +4,7 @@ import { probe, mapWithConcurrency } from "./probe";
 import { analyzeAnswers } from "./extract";
 import { computeScores } from "./score";
 import { diagnose } from "./diagnose";
+import { auditMedia, type MediaEvent } from "@/lib/media/audit";
 import type {
   AuditReport,
   BrandProfile,
@@ -21,7 +22,8 @@ export type AuditEvent =
   | { type: "scores"; scores: Scores }
   | { type: "diagnosis"; diagnosis: Diagnosis }
   | { type: "done"; report: AuditReport }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | MediaEvent;
 
 /**
  * Work is done a chunk at a time: probe the chunk, then read all of its
@@ -55,6 +57,9 @@ function humanize(error: unknown, step: string): string {
 
   if (/UNAVAILABLE|high demand|overloaded/i.test(message)) {
     return `The model is busy right now (this happens, and it passes). Echo retried and also tried a backup model. Give it a minute and run it again. Failed while: ${step}.`;
+  }
+  if (/PerDay/.test(message)) {
+    return `The daily free-tier Gemini quota is used up for every model Echo can fall back to. It resets at midnight Pacific time. The image audit above does not use Gemini and is unaffected. Failed while: ${step}.`;
   }
   if (/RESOURCE_EXHAUSTED|quota/i.test(message)) {
     return `Rate limit reached. Free-tier Gemini allows about 5 requests per minute per model. Wait a minute, then try again — or lower the question count. Failed while: ${step}.`;
@@ -92,12 +97,20 @@ export async function runAudit(
 ): Promise<void> {
   const domain = normalizeDomain(rawDomain);
   let stage = "starting up";
+  let media: ReturnType<typeof auditMedia> | null = null;
 
   try {
     stage = `reading ${domain}`;
     emit({ type: "status", step: "profile", message: `Reading ${domain}` });
     const profile = await buildProfile(domain);
     emit({ type: "profile", profile });
+
+    // The image audit needs no model, so it runs alongside everything below
+    // and survives a model failure.
+    media = auditMedia(domain, emit).catch(() => {
+      emit({ type: "media-note", message: "The image audit failed. Check the Cloudinary credentials with `npm run check`." });
+      return null;
+    });
 
     stage = "writing the questions buyers ask";
     emit({
@@ -160,6 +173,8 @@ export async function runAudit(
     const diagnosis = await diagnose(profile, scores, probes);
     emit({ type: "diagnosis", diagnosis });
 
+    const mediaResult = await media;
+
     const report: AuditReport = {
       id: crypto.randomUUID(),
       domain,
@@ -168,9 +183,12 @@ export async function runAudit(
       probes,
       scores,
       diagnosis,
+      media: mediaResult?.assets ?? [],
+      mediaScores: mediaResult?.scores ?? null,
     };
     emit({ type: "done", report });
   } catch (error) {
     emit({ type: "error", message: humanize(error, stage) });
+    await media;
   }
 }

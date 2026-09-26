@@ -39,7 +39,40 @@ function report(): never {
 type Role = "probe" | "reader" | "analyst";
 const ROLES: Role[] = ["analyst", "reader", "probe"];
 
+/**
+ * Cloudinary runs the image audit. A ping proves the cloud name, key and
+ * secret belong together -- the common mistake is a cloud name that is not the
+ * one the key was issued for, which the API reports as "Invalid cloud_name".
+ */
+async function checkCloudinary() {
+  const media = await import("../src/lib/media/cloudinary");
+  if (!media.cloudinaryConfigured()) {
+    add(
+      "cloudinary",
+      false,
+      "not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET (Cloudinary console -> Settings -> API Keys).",
+    );
+    return;
+  }
+  try {
+    await media.client().api.ping();
+    add("cloudinary", true, `connected to cloud "${media.client().config().cloud_name}"`);
+  } catch (error) {
+    const raw =
+      (error as { error?: { message?: string } })?.error?.message ??
+      (error instanceof Error ? error.message : String(error));
+    const detail = /cloud_name/i.test(raw)
+      ? "the cloud name does not match this API key. Copy the Cloud name shown at the top of the Cloudinary console."
+      : /api_key|api_secret|Invalid Signature/i.test(raw)
+        ? "API key or secret rejected."
+        : "unrecognised failure.";
+    add("cloudinary", false, detail, raw.slice(0, 300));
+  }
+}
+
 async function main() {
+  await checkCloudinary();
+
   const hasGemini = Boolean(
     process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
   );

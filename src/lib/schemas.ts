@@ -135,6 +135,47 @@ export interface ProbeResult {
   analysis: MentionAnalysis;
 }
 
+/* ---------- Image audit, run through Cloudinary ---------- */
+
+export interface MediaVariants {
+  /** Same pixels, delivered with f_auto,q_auto. */
+  optimized: string;
+  thumb: string;
+  /** 1200x630 link-preview crop, subject found by g_auto. */
+  social: string;
+  square: string;
+  /** Background removed. Generated on demand, since it is the costly one. */
+  cutout: string;
+}
+
+export interface MediaAsset {
+  sourceUrl: string;
+  publicId: string;
+  width: number;
+  height: number;
+  format: string;
+  /** The alt text the site ships. Null when missing or empty. */
+  siteAlt: string | null;
+  /** Cloudinary AI caption. Null when the add-on is unavailable. */
+  aiCaption: string | null;
+  aiTags: string[];
+  originalBytes: number;
+  /** Size delivered with f_auto,q_auto. Null when it could not be measured. */
+  optimizedBytes: number | null;
+  variants: MediaVariants;
+}
+
+export interface MediaScores {
+  audited: number;
+  skipped: number;
+  altCoverage: number;
+  missingAlt: number;
+  captioned: number;
+  originalBytes: number;
+  optimizedBytes: number;
+  savedPct: number;
+}
+
 export interface AuditReport {
   id: string;
   domain: string;
@@ -143,4 +184,6 @@ export interface AuditReport {
   probes: ProbeResult[];
   scores: Scores;
   diagnosis: Diagnosis;
+  media: MediaAsset[];
+  mediaScores: MediaScores | null;
 }

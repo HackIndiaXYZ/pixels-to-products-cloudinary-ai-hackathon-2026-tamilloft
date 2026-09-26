@@ -8,7 +8,8 @@ reconstructed afterwards.
 | Tool | Role |
 |---|---|
 | Claude Opus 5 via Claude Code | Product strategy, architecture, and essentially all source code |
-| Claude Opus 5 via `@anthropic-ai/sdk` | The product's own runtime — every pipeline step |
+| Gemini via `@google/genai` (Claude supported) | The product's own runtime — the text audit |
+| Cloudinary AI | The product's own runtime — the image audit |
 
 ## Session 1 — idea selection and build kickoff
 
@@ -127,6 +128,44 @@ key was.
 **Human judgment applied:** supplied the credential reality that drove the
 abstraction. The result is better architecture than the single-provider
 version it replaced.
+
+## Session 4 — Cloudinary hackathon fit
+
+**Human input:** the Pixels to Products brief, which requires Cloudinary as a
+core part of the product, and Cloudinary credentials.
+
+**AI contribution:**
+
+1. **Gap analysis against the brief.** Found that Echo used no Cloudinary and
+   no media at all, so it would have been ineligible on every track.
+2. **Chose an extension over a rewrite.** Echo's thesis is that AI decides
+   whether buyers see a brand. Its images are half of how a brand is seen, so
+   an image audit extends the product rather than bolting on storage. It fits
+   Track 1: media goes in, Cloudinary's AI analyzes and transforms it, and the
+   output is useful.
+3. **Probed the account before designing.** AI captioning and auto-tagging are
+   add-ons an account may not have, so each is attempted independently, and a
+   missing one is reported in the UI rather than failing the audit. The probe
+   also exposed a cloud name that did not match the API key.
+4. **Measured, not estimated.** The weight-savings figure comes from
+   downloading the `f_auto,q_auto` delivery with a modern browser's Accept
+   header, and the media scores are computed in code with unit tests, the same
+   rule the text audit follows.
+5. **Tested against live sites.** Running the image collector on real
+   homepages caught escaped quotes in JSON-embedded markup and undecoded HTML
+   entities in alt text. Both were fixed and turned into test cases.
+6. **Found a hang during end-to-end testing.** A live audit stalled for
+   minutes. The cause was a per-day Gemini quota: Google attaches a
+   "retry in 29s" hint even though the quota resets tomorrow, and the retry
+   loop honoured it. Daily quotas are now treated as not retryable, so the
+   audit falls straight through to the next model. The same audit then
+   finished in 77 seconds.
+7. **Honest sample data.** The no-credentials sample uses real assets on
+   Cloudinary's public demo cloud, with sizes measured from those URLs. The
+   brand is still labeled as invented.
+
+**Human judgment applied:** supplied the brief and credentials, and delegated
+the approach.
 
 ## Estimated AI share of execution
 

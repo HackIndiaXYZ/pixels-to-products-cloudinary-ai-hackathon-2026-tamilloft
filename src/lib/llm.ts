@@ -171,7 +171,18 @@ function statusOf(error: unknown): number | undefined {
   return undefined;
 }
 
+/**
+ * A per-day quota. Google still attaches a retry delay of a few seconds to
+ * these, but the quota resets tomorrow, so honouring it only hangs the audit.
+ * Not retryable -- callGemini moves on to the next model instead.
+ */
+export function isDailyQuota(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /PerDay/.test(message);
+}
+
 export function isRetryable(error: unknown): boolean {
+  if (isDailyQuota(error)) return false;
   const status = statusOf(error);
   if (status === 429 || (status !== undefined && status >= 500)) return true;
   if (error instanceof Anthropic.APIConnectionError) return true;

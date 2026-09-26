@@ -2,15 +2,60 @@
 
 *Do AI models recommend your brand? Find out before your competitors do.*
 
-Buyers now ask an AI what to buy before they ask Google. Almost no company can
-measure whether they appear in that answer. Echo measures it.
+Built for **Pixels to Products — Cloudinary AI Hackathon 2026** by **TamilLoft**.
+**Track 1 — AI Media Pipelines.**
 
-Give it a domain. Echo researches what the company actually sells, writes the
-questions a real buyer would ask, asks them with no mention of the brand, reads
-every answer, and reports the share of the conversation you own — against the
-competitors who took the rest.
+## The problem
 
-Built for the AI-First Startup Hackathon by **TamilLoft**.
+Buyers now ask an AI what to buy before they ask Google, and AI answers, link
+previews and image search all describe a brand partly from its pictures.
+Almost no company can measure whether the AI answer includes them, or whether
+their images tell a machine anything at all. A homepage hero with no alt text
+and a stock photo of coffee says "coffee" to every crawler that reads it.
+
+Give Echo a domain and it answers both questions:
+
+- **Words:** it writes the questions a real buyer would ask, asks them with no
+  mention of the brand, and reports the share of the conversation you own
+  against the competitors who took the rest.
+- **Pictures:** it runs every image on the homepage through a Cloudinary AI
+  pipeline and reports what the AI sees in each one, which images have no alt
+  text, how much weight optimized delivery saves, and ready-made crops for
+  where the images will be shown.
+
+## How Echo uses Cloudinary
+
+Media goes in, Cloudinary's AI does the work, and the output is a report plus
+assets you can use directly. The code is in `src/lib/media/`.
+
+| Stage | Cloudinary capability | What it does in Echo |
+|---|---|---|
+| Ingest | **Upload API** (remote URL) | Each homepage image is uploaded by URL, so Cloudinary fetches it. The public ID is derived from the source URL and uploads never overwrite, so re-auditing a site reuses its assets. |
+| Organize | **Tags + contextual metadata** | Assets are tagged `echo` and `site:<domain>`. The site's own alt text, the source URL and the AI caption are stored as context on the asset. |
+| Analyze | **AI captioning** (AI Content Analysis) and **auto-tagging** (Google / Amazon Rekognition) | The caption is what the AI sees, offered as alt text when the site ships none. Tags show what the image is actually about. |
+| Optimize | **`f_auto`, `q_auto`** | Echo downloads the optimized delivery the way a modern browser would and measures the bytes. The savings figure is observed, not estimated. |
+| Transform | **`g_auto` content-aware crop** | A 1200×630 link-preview crop and a 1080×1080 square, cropped around the subject. |
+| Transform | **`e_background_removal`** | An AI cutout per image, generated on demand because it is the costly one. |
+| Deliver | **Delivery URLs** | Every thumbnail and preview in the report is a live Cloudinary URL. |
+
+The AI add-ons are optional. If one isn't enabled on the account, Echo notes
+it in the report and everything else still runs. The image audit makes no
+language-model calls, runs alongside the text audit, and still finishes if the
+model provider is rate limited.
+
+## How to test it
+
+1. **No credentials:** run `npm run dev`, open http://localhost:3000 and click
+   **view a sample report**. The brand is invented and labeled as such, but the
+   images are real assets on Cloudinary's public `demo` cloud, so every crop,
+   cutout and optimized delivery is a live transformation. Click **Remove
+   background** on any image.
+2. **Your own site:** set the Cloudinary and Gemini variables (see below), run
+   `npm run check`, then enter a domain such as `allbirds.com`. The image audit
+   section fills in as each image is processed. The assets appear in your
+   Cloudinary Media Library under `echo/<domain>`.
+3. **Unit tests:** `npm test` covers the scoring code and the image extraction.
+   No API calls are made.
 
 ## How it works
 
@@ -22,6 +67,7 @@ Built for the AI-First Startup Hackathon by **TamilLoft**.
 | 4. Extract | Reads each answer and records what it said — who was named, in what order, how framed | model |
 | 5. Score | Computes visibility, share of voice, average rank, accuracy | **Plain TypeScript** |
 | 6. Diagnose | Explains the cause and prescribes specific fixes | model |
+| Images (in parallel) | Collects homepage images, then uploads, analyzes, optimizes and crops them | **Cloudinary** |
 
 ### Two design decisions worth knowing
 
@@ -52,7 +98,7 @@ in the pipeline now depends on a feature that only one provider has.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in ONE provider
+cp .env.example .env.local   # fill in Cloudinary and ONE model provider
 npm run check                # verify the credentials actually work
 npm run dev
 ```
@@ -110,10 +156,12 @@ land over server-sent events.
 npm test
 ```
 
-Covers the scoring step (`src/lib/audit/score.ts`), since every figure in the
-report comes from it. No API calls are made.
+Covers both scoring steps (`src/lib/audit/score.ts`, `src/lib/media/score.ts`),
+since every figure in the report comes from them, and the homepage image
+extraction. No API calls are made.
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind v4 · Gemini via `@google/genai`
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · Cloudinary Node SDK ·
+Gemini via `@google/genai`
 (Claude API and Bedrock also supported) · zod-validated structured outputs

@@ -1,4 +1,4 @@
-import type { BrandProfile, Diagnosis, ProbeResult } from "@/lib/schemas";
+import type { BrandProfile, Diagnosis, MediaAsset, ProbeResult } from "@/lib/schemas";
 
 /**
  * A worked example for developing and demoing without spending API calls.
@@ -377,3 +377,63 @@ export const sampleDiagnosis: Diagnosis = {
     },
   ],
 };
+
+/**
+ * The image half of the sample. These are real assets on Cloudinary's public
+ * `demo` cloud, so every thumbnail, crop and cutout below is a live
+ * transformation, and the byte counts were measured from those URLs. Only the
+ * framing -- that they sit on Brightloom's homepage -- is invented.
+ *
+ * The captions and tags stand in for the AI add-on output and were written to
+ * match what each picture shows.
+ */
+const DEMO = "https://res.cloudinary.com/demo/image/upload";
+const demoVariants = (id: string) => ({
+  optimized: `${DEMO}/f_auto,q_auto/${id}`,
+  thumb: `${DEMO}/c_limit,w_640/f_auto,q_auto/${id}`,
+  social: `${DEMO}/c_fill,g_auto,h_630,w_1200/f_auto,q_auto/${id}`,
+  square: `${DEMO}/c_fill,g_auto,h_1080,w_1080/f_auto,q_auto/${id}`,
+  cutout: `${DEMO}/e_background_removal/c_limit,w_800/f_auto,q_auto/${id}`,
+});
+
+export const sampleMedia: MediaAsset[] = [
+  {
+    sourceUrl: "https://brightloom.io/images/team-offsite.jpg",
+    publicId: "samples/cloudinary-group",
+    width: 3000,
+    height: 1526,
+    format: "jpg",
+    siteAlt: "The Brightloom team at our 2026 offsite",
+    aiCaption: "A large group of people posing together outdoors at dusk",
+    aiTags: ["group", "people", "team", "outdoor", "sunset"],
+    originalBytes: 2856169,
+    optimizedBytes: 285356,
+    variants: demoVariants("samples/cloudinary-group"),
+  },
+  {
+    sourceUrl: "https://brightloom.io/images/testimonial-marcus.jpg",
+    publicId: "samples/people/smiling-man",
+    width: 849,
+    height: 565,
+    format: "jpg",
+    siteAlt: null,
+    aiCaption: "A smiling young man with red hair wearing a grey hoodie outdoors",
+    aiTags: ["person", "portrait", "smile", "hoodie"],
+    originalBytes: 338794,
+    optimizedBytes: 13978,
+    variants: demoVariants("samples/people/smiling-man"),
+  },
+  {
+    sourceUrl: "https://brightloom.io/images/hero.jpg",
+    publicId: "coffee_cup",
+    width: 1000,
+    height: 895,
+    format: "jpg",
+    siteAlt: null,
+    aiCaption: "A steaming cup of coffee on a saucer beside coffee beans, a fireplace behind",
+    aiTags: ["coffee", "cup", "coffee beans", "drink", "fireplace"],
+    originalBytes: 694090,
+    optimizedBytes: 26629,
+    variants: demoVariants("coffee_cup"),
+  },
+];

@@ -17,6 +17,9 @@ Then set the environment variables, either in the Vercel dashboard under
 
 ```bash
 npx vercel env add GEMINI_API_KEY production
+npx vercel env add CLOUDINARY_CLOUD_NAME production
+npx vercel env add CLOUDINARY_API_KEY production
+npx vercel env add CLOUDINARY_API_SECRET production
 npx vercel env add GEMINI_MODEL production        # gemini-3.5-flash
 npx vercel env add ECHO_QUERY_COUNT production    # 6 to start
 ```
@@ -39,6 +42,9 @@ which is the better setup for the rest of the hackathon.
 | Variable | Needed | Notes |
 |---|---|---|
 | `GEMINI_API_KEY` | Yes | From https://aistudio.google.com/apikey |
+| `CLOUDINARY_CLOUD_NAME` | Yes | Shown at the top of the Cloudinary console. Must match the key |
+| `CLOUDINARY_API_KEY` | Yes | Console → Settings → API Keys |
+| `CLOUDINARY_API_SECRET` | Yes | Same page. Never commit it |
 | `GEMINI_MODEL` | Recommended | `gemini-3.5-flash`. The Pro default has a very small free-tier quota |
 | `ECHO_QUERY_COUNT` | Recommended | `6` for a deployed demo. See the timeout note below |
 | `GEMINI_RPM` | Only on a paid key | Defaults to 5, matching the free tier |
@@ -65,5 +71,7 @@ questions and the diagnosis all render exactly the same.
 
 - [ ] The landing page loads at the production URL
 - [ ] **Run one real audit on the deployed URL**, not just locally
+- [ ] The image audit section fills in, and the assets appear in the
+      Cloudinary Media Library under `echo/<domain>`
 - [ ] The sample report button works — it needs no API calls, so it is your
       fallback if the live key is rate-limited during judging

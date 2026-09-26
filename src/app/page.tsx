@@ -5,12 +5,21 @@ import { ScoreCard } from "@/components/ScoreCard";
 import { ShareOfVoice } from "@/components/ShareOfVoice";
 import { ProbeFeed } from "@/components/ProbeFeed";
 import { Findings } from "@/components/Findings";
+import { MediaAudit } from "@/components/MediaAudit";
 import type { AuditEvent } from "@/lib/audit/run";
 import { computeScores } from "@/lib/audit/score";
-import { sampleProfile, sampleProbes, sampleDiagnosis } from "@/lib/sample";
+import { computeMediaScores } from "@/lib/media/score";
+import {
+  sampleProfile,
+  sampleProbes,
+  sampleDiagnosis,
+  sampleMedia,
+} from "@/lib/sample";
 import type {
   BrandProfile,
   Diagnosis,
+  MediaAsset,
+  MediaScores,
   ProbeQuery,
   ProbeResult,
   Scores,
@@ -32,6 +41,12 @@ export default function Home() {
   const [scores, setScores] = useState<Scores | null>(null);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [isSample, setIsSample] = useState(false);
+
+  const [media, setMedia] = useState<(MediaAsset | undefined)[]>([]);
+  const [mediaExpected, setMediaExpected] = useState(0);
+  const [mediaScores, setMediaScores] = useState<MediaScores | null>(null);
+  const [mediaNotes, setMediaNotes] = useState<string[]>([]);
+  const [mediaStarted, setMediaStarted] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -66,6 +81,24 @@ export default function Home() {
       case "error":
         setError(event.message);
         break;
+      case "media-found":
+        setMediaStarted(true);
+        setMediaExpected(event.count);
+        break;
+      case "media":
+        setMedia((current) => {
+          const next = [...current];
+          next[event.index] = event.asset;
+          return next;
+        });
+        break;
+      case "media-scores":
+        setMediaScores(event.scores);
+        break;
+      case "media-note":
+        setMediaStarted(true);
+        setMediaNotes((current) => [...current, event.message]);
+        break;
     }
   }, []);
 
@@ -84,6 +117,11 @@ export default function Home() {
     setProbes([]);
     setScores(null);
     setDiagnosis(null);
+    setMedia([]);
+    setMediaExpected(0);
+    setMediaScores(null);
+    setMediaNotes([]);
+    setMediaStarted(false);
     setIsSample(false);
 
     try {
@@ -148,6 +186,11 @@ export default function Home() {
     setError(null);
     setScores(null);
     setDiagnosis(null);
+    setMedia([]);
+    setMediaExpected(0);
+    setMediaScores(null);
+    setMediaNotes([]);
+    setMediaStarted(false);
     setDomain("brightloom.io");
 
     setStatus("Reading brightloom.io");
@@ -176,6 +219,19 @@ export default function Home() {
     await pause(400);
     setScores(computeScores(sampleProbes, sampleProfile));
 
+    setStatus("Running homepage images through Cloudinary");
+    setMediaStarted(true);
+    setMediaExpected(sampleMedia.length);
+    for (let index = 0; index < sampleMedia.length; index++) {
+      await pause(250);
+      setMedia((current) => {
+        const next = [...current];
+        next[index] = sampleMedia[index];
+        return next;
+      });
+    }
+    setMediaScores(computeMediaScores(sampleMedia, 0));
+
     setStatus("Working out why, and what to do about it");
     await pause(600);
     setDiagnosis(sampleDiagnosis);
@@ -191,11 +247,12 @@ export default function Home() {
       <header>
         <div className="flex items-baseline gap-3">
           <h1 className="text-ink text-2xl tracking-tight">Echo</h1>
-          <span className="text-ink-muted text-sm">AI visibility auditor</span>
+          <span className="text-ink-muted text-sm">AI visibility auditor, powered by Cloudinary</span>
         </div>
         <p className="text-ink-2 mt-3 max-w-prose">
           Buyers ask AI what to buy before they ask Google. Echo measures
-          whether the answer includes you.
+          whether the answer includes you, and runs your homepage images
+          through Cloudinary&apos;s AI to see whether they tell the same story.
         </p>
       </header>
 
@@ -254,8 +311,9 @@ export default function Home() {
         <p className="border-line bg-surface text-ink-2 mt-6 rounded-md border p-4 text-sm">
           <span className="text-ink">Sample report.</span> Brightloom and every
           competitor named here are invented, and these answers were not
-          measured — this is a worked example of the output. The scores below
-          are still computed from it by the real scoring code.
+          measured — this is a worked example of the output. The images are
+          real assets on Cloudinary&apos;s public demo cloud, transformed live. The
+          scores below are still computed by the real scoring code.
         </p>
       ) : null}
 
@@ -301,6 +359,15 @@ export default function Home() {
           <Findings diagnosis={diagnosis} scores={scores} />
         ) : null}
 
+        {mediaStarted ? (
+          <MediaAudit
+            assets={media}
+            expected={mediaExpected}
+            scores={mediaScores}
+            notes={mediaNotes}
+          />
+        ) : null}
+
         {queries.length > 0 && profile ? (
           <ProbeFeed
             results={probes}
@@ -313,7 +380,8 @@ export default function Home() {
       <footer className="text-ink-muted border-line mt-16 border-t pt-6 text-xs">
         Probes run with no system prompt and no mention of the brand. Every
         figure above is computed in code from those answers, not generated by a
-        model.
+        model. Images are uploaded, analyzed, transformed and delivered by
+        Cloudinary.
       </footer>
     </main>
   );

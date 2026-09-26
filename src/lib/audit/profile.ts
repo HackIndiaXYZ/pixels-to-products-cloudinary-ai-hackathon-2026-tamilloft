@@ -54,7 +54,7 @@ function metaSignals(html: string): string {
  * redirect inward. Auditing a hostile site means attacking your own report,
  * so this is accepted rather than hop-validated.
  */
-function assertPublicDomain(domain: string): void {
+export function assertPublicDomain(domain: string): void {
   if (!domain || domain.length > 253) {
     throw new Error("Enter a domain, for example example.com");
   }
