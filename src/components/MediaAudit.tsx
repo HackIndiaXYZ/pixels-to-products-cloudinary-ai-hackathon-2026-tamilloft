@@ -35,8 +35,76 @@ function Preview({ href, src, label, ratio }: { href: string; src: string; label
   );
 }
 
+type GenState = "idle" | "loading" | "done" | "failed";
+
+/**
+ * A generative edit, requested only when asked for. Cloudinary generates it on
+ * the first request for its URL, which takes several seconds and spends AI
+ * credits, so nothing is generated until someone wants to see it.
+ */
+function Generated({
+  src,
+  label,
+  ratio,
+  action,
+}: {
+  src: string;
+  label: string;
+  ratio: string;
+  action: string;
+}) {
+  const [state, setState] = useState<GenState>("idle");
+
+  if (state === "idle") {
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={() => setState("loading")}
+          className="border-line hover:border-mark text-ink-2 hover:text-ink flex w-full flex-col items-center justify-center gap-1 rounded border border-dashed px-2 text-center text-xs"
+          style={{ aspectRatio: ratio }}
+        >
+          <span aria-hidden className="text-mark text-base">✦</span>
+          {action}
+        </button>
+        <div className="text-ink-muted mt-1 text-xs">{label}</div>
+      </div>
+    );
+  }
+
+  return (
+    <a href={src} target="_blank" rel="noreferrer" className="group block">
+      <div
+        className="border-line bg-raised relative overflow-hidden rounded border"
+        style={{ aspectRatio: ratio }}
+      >
+        {state !== "failed" ? (
+          <img
+            src={src}
+            alt={label}
+            onLoad={() => setState("done")}
+            onError={() => setState("failed")}
+            className={`h-full w-full object-contain transition-opacity ${state === "done" ? "opacity-100" : "opacity-0"}`}
+          />
+        ) : null}
+        {state === "loading" ? (
+          <div className="text-ink-2 absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs">
+            <span className="bg-mark h-1.5 w-1.5 animate-pulse rounded-full" />
+            Generating…
+          </div>
+        ) : null}
+        {state === "failed" ? (
+          <div className="text-ink-muted absolute inset-0 flex items-center justify-center p-2 text-center text-xs">
+            Could not generate. The account&apos;s AI credits may be used up.
+          </div>
+        ) : null}
+      </div>
+      <div className="text-ink-muted group-hover:text-ink-2 mt-1 text-xs">{label}</div>
+    </a>
+  );
+}
+
 function AssetCard({ asset }: { asset: MediaAsset }) {
-  const [showCutout, setShowCutout] = useState(false);
   const optimized = asset.optimizedBytes === null ? null : Math.min(asset.optimizedBytes, asset.originalBytes);
   const saved = optimized === null ? null : Math.round(((asset.originalBytes - optimized) / asset.originalBytes) * 100);
 
@@ -99,24 +167,37 @@ function AssetCard({ asset }: { asset: MediaAsset }) {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      {/* Column widths follow the aspect ratios, so every tile in a row is the same height. */}
+      <h3 className="text-ink-muted mt-5 text-xs tracking-widest uppercase">
+        Smart crops · g_auto
+      </h3>
+      <div className="mt-2 grid grid-cols-[1.9fr_1fr] gap-3">
         <Preview href={asset.variants.social} src={asset.variants.social} label="Link preview 1200×630" ratio="1200 / 630" />
         <Preview href={asset.variants.square} src={asset.variants.square} label="Square 1080×1080" ratio="1 / 1" />
-        {showCutout ? (
-          <Preview href={asset.variants.cutout} src={asset.variants.cutout} label="Background removed" ratio="1 / 1" />
-        ) : (
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowCutout(true)}
-              className="border-line hover:border-baseline text-ink-2 flex w-full items-center justify-center rounded border border-dashed text-xs"
-              style={{ aspectRatio: "1 / 1" }}
-            >
-              Remove background
-            </button>
-            <div className="text-ink-muted mt-1 text-xs">AI cutout, on demand</div>
-          </div>
-        )}
+      </div>
+
+      <h3 className="text-ink-muted mt-5 text-xs tracking-widest uppercase">
+        Generative AI fixes
+      </h3>
+      <div className="mt-2 grid grid-cols-[1.9fr_1fr_1fr] gap-3">
+        <Generated
+          src={asset.variants.extended}
+          label="1200×630 by generative fill: nothing cropped"
+          ratio="1200 / 630"
+          action="Extend to 1200×630"
+        />
+        <Generated
+          src={asset.variants.cutout}
+          label="Background removed"
+          ratio="1 / 1"
+          action="Remove background"
+        />
+        <Generated
+          src={asset.variants.studio}
+          label="Studio background, generated"
+          ratio="1 / 1"
+          action="New background"
+        />
       </div>
     </li>
   );
@@ -142,8 +223,9 @@ export function MediaAudit({
       </h2>
       <p className="text-ink-2 mt-3 max-w-prose text-sm">
         AI answers and link previews describe a brand from its images too. Each
-        image on the homepage is uploaded to Cloudinary, read by its AI, and
-        re-delivered optimized and cropped for where it will be seen.
+        image on the homepage is uploaded to Cloudinary, read by its AI,
+        re-delivered optimized and cropped for where it will be seen, and can
+        be fixed with generative AI in one click.
       </p>
 
       {scores ? (

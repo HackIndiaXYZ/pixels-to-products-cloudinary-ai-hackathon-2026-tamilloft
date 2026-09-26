@@ -394,6 +394,8 @@ const demoVariants = (id: string) => ({
   social: `${DEMO}/c_fill,g_auto,h_630,w_1200/f_auto,q_auto/${id}`,
   square: `${DEMO}/c_fill,g_auto,h_1080,w_1080/f_auto,q_auto/${id}`,
   cutout: `${DEMO}/e_background_removal/c_limit,w_800/f_auto,q_auto/${id}`,
+  extended: `${DEMO}/b_gen_fill,c_pad,h_630,w_1200/f_auto,q_auto/${id}`,
+  studio: `${DEMO}/e_gen_background_replace:prompt_a_bright_minimal_studio/c_limit,w_800/f_auto,q_auto/${id}`,
 });
 
 export const sampleMedia: MediaAsset[] = [

@@ -35,7 +35,9 @@ assets you can use directly. The code is in `src/lib/media/`.
 | Analyze | **AI captioning** (AI Content Analysis) and **auto-tagging** (Google / Amazon Rekognition) | The caption is what the AI sees, offered as alt text when the site ships none. Tags show what the image is actually about. |
 | Optimize | **`f_auto`, `q_auto`** | Echo downloads the optimized delivery the way a modern browser would and measures the bytes. The savings figure is observed, not estimated. |
 | Transform | **`g_auto` content-aware crop** | A 1200×630 link-preview crop and a 1080×1080 square, cropped around the subject. |
-| Transform | **`e_background_removal`** | An AI cutout per image, generated on demand because it is the costly one. |
+| Generate | **`b_gen_fill`** generative fill | Extends an image to 1200×630 by generating the missing edges, so a link preview shows the whole picture instead of a crop. |
+| Generate | **`e_gen_background_replace`** | Puts the subject on a generated studio backdrop, for product-style shots from lifestyle photos. |
+| Transform | **`e_background_removal`** | An AI cutout per image. |
 | Deliver | **Delivery URLs** | Every thumbnail and preview in the report is a live Cloudinary URL. |
 
 The AI add-ons are optional. If one isn't enabled on the account, Echo notes
@@ -48,8 +50,9 @@ model provider is rate limited.
 1. **No credentials:** run `npm run dev`, open http://localhost:3000 and click
    **view a sample report**. The brand is invented and labeled as such, but the
    images are real assets on Cloudinary's public `demo` cloud, so every crop,
-   cutout and optimized delivery is a live transformation. Click **Remove
-   background** on any image.
+   cutout and optimized delivery is a live transformation. Open the **Images**
+   tab and try **Extend to 1200×630**, **Remove background** and **New
+   background** on any image. Each takes 5–15 seconds the first time.
 2. **Your own site:** set the Cloudinary and Gemini variables (see below), run
    `npm run check`, then enter a domain such as `allbirds.com`. The image audit
    section fills in as each image is processed. The assets appear in your

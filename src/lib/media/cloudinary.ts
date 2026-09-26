@@ -29,6 +29,9 @@ export function client() {
   return cloudinary;
 }
 
+/** Neutral on purpose: it should suit any product without inventing a brand story. */
+export const STUDIO_PROMPT = "a bright minimal studio";
+
 /** Every delivery ends with this: the smallest format and quality the viewer's browser accepts. */
 const AUTO: TransformationOptions = { fetch_format: "auto", quality: "auto" };
 
@@ -42,6 +45,12 @@ export function variants(publicId: string): MediaVariants {
     social: url([{ width: 1200, height: 630, crop: "fill", gravity: "auto" }, AUTO]),
     square: url([{ width: 1080, height: 1080, crop: "fill", gravity: "auto" }, AUTO]),
     cutout: url([{ effect: "background_removal" }, { width: 800, crop: "limit" }, AUTO]),
+    extended: url([{ background: "gen_fill", crop: "pad", width: 1200, height: 630 }, AUTO]),
+    studio: url([
+      { effect: `gen_background_replace:prompt_${STUDIO_PROMPT}` },
+      { width: 800, crop: "limit" },
+      AUTO,
+    ]),
   };
 }
 

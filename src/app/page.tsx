@@ -6,6 +6,7 @@ import { ShareOfVoice } from "@/components/ShareOfVoice";
 import { ProbeFeed } from "@/components/ProbeFeed";
 import { Findings } from "@/components/Findings";
 import { MediaAudit } from "@/components/MediaAudit";
+import { ReportTabs } from "@/components/ReportTabs";
 import type { AuditEvent } from "@/lib/audit/run";
 import { computeScores } from "@/lib/audit/score";
 import { computeMediaScores } from "@/lib/media/score";
@@ -47,6 +48,7 @@ export default function Home() {
   const [mediaScores, setMediaScores] = useState<MediaScores | null>(null);
   const [mediaNotes, setMediaNotes] = useState<string[]>([]);
   const [mediaStarted, setMediaStarted] = useState(false);
+  const [tab, setTab] = useState<"answers" | "images">("answers");
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -122,6 +124,7 @@ export default function Home() {
     setMediaScores(null);
     setMediaNotes([]);
     setMediaStarted(false);
+    setTab("answers");
     setIsSample(false);
 
     try {
@@ -191,6 +194,7 @@ export default function Home() {
     setMediaScores(null);
     setMediaNotes([]);
     setMediaStarted(false);
+    setTab("answers");
     setDomain("brightloom.io");
 
     setStatus("Reading brightloom.io");
@@ -241,6 +245,10 @@ export default function Home() {
   }, [running]);
 
   const started = running || probes.length > 0 || Boolean(error);
+
+  const answered = probes.filter(Boolean).length;
+  const imagesReady = media.filter(Boolean).length;
+  const imagesBusy = mediaStarted && !mediaScores && mediaExpected > 0;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:py-20">
@@ -343,39 +351,82 @@ export default function Home() {
         </section>
       ) : null}
 
-      <div className="mt-6 flex flex-col gap-6">
-        {scores && profile ? (
-          <ScoreCard scores={scores} brand={profile.brand} />
-        ) : null}
+      {profile || mediaStarted ? (
+        <ReportTabs
+          active={tab}
+          onChange={setTab}
+          tabs={[
+            {
+              id: "answers",
+              label: "AI answers",
+              metric: scores
+                ? `${scores.visibilityScore}% visible`
+                : queries.length > 0
+                  ? `${answered} of ${queries.length}`
+                  : "—",
+              hint: scores
+                ? `in ${scores.unbrandedHits} of ${scores.unbrandedTotal} unbranded questions`
+                : queries.length > 0
+                  ? "questions answered"
+                  : running
+                    ? "writing the questions"
+                    : "not run",
+              busy: running && !diagnosis,
+              content: (
+                <>
+                  {scores && profile ? (
+                    <ScoreCard scores={scores} brand={profile.brand} />
+                  ) : null}
 
-        {scores ? (
-          <ShareOfVoice
-            scores={scores}
-            totalQuestions={scores.unbrandedTotal}
-          />
-        ) : null}
+                  {scores ? (
+                    <ShareOfVoice
+                      scores={scores}
+                      totalQuestions={scores.unbrandedTotal}
+                    />
+                  ) : null}
 
-        {diagnosis && scores ? (
-          <Findings diagnosis={diagnosis} scores={scores} />
-        ) : null}
+                  {diagnosis && scores ? (
+                    <Findings diagnosis={diagnosis} scores={scores} />
+                  ) : null}
 
-        {mediaStarted ? (
-          <MediaAudit
-            assets={media}
-            expected={mediaExpected}
-            scores={mediaScores}
-            notes={mediaNotes}
-          />
-        ) : null}
-
-        {queries.length > 0 && profile ? (
-          <ProbeFeed
-            results={probes}
-            total={queries.length}
-            brand={profile.brand}
-          />
-        ) : null}
-      </div>
+                  {queries.length > 0 && profile ? (
+                    <ProbeFeed
+                      results={probes}
+                      total={queries.length}
+                      brand={profile.brand}
+                    />
+                  ) : null}
+                </>
+              ),
+            },
+            {
+              id: "images",
+              label: "Images · Cloudinary",
+              metric: mediaScores
+                ? `${mediaScores.savedPct}% lighter`
+                : imagesBusy
+                  ? `${imagesReady} of ${mediaExpected}`
+                  : "—",
+              hint: mediaScores
+                ? `${mediaScores.missingAlt} of ${mediaScores.audited} images missing alt text`
+                : imagesBusy
+                  ? "images processed"
+                  : mediaNotes[0] ?? "collecting images",
+              busy: imagesBusy,
+              content: mediaStarted ? (
+                <MediaAudit
+                  assets={media}
+                  expected={mediaExpected}
+                  scores={mediaScores}
+                  notes={mediaNotes}
+                />
+              ) : (
+                <p className="text-ink-2 text-sm">Collecting the homepage images…</p>
+              ),
+            },
+          ]}
+        />
+      ) : null}
 
       <footer className="text-ink-muted border-line mt-16 border-t pt-6 text-xs">
         Probes run with no system prompt and no mention of the brand. Every

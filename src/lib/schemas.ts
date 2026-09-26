@@ -144,8 +144,12 @@ export interface MediaVariants {
   /** 1200x630 link-preview crop, subject found by g_auto. */
   social: string;
   square: string;
-  /** Background removed. Generated on demand, since it is the costly one. */
+  /** Background removed. The three AI edits are generated on demand, since they are the costly ones. */
   cutout: string;
+  /** Padded to 1200x630 with generative fill, so nothing is cropped away. */
+  extended: string;
+  /** Background replaced by a generated studio backdrop. */
+  studio: string;
 }
 
 export interface MediaAsset {

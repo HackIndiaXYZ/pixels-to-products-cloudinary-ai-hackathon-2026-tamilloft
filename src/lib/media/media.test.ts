@@ -76,7 +76,7 @@ function asset(overrides: Partial<MediaAsset>): MediaAsset {
     aiTags: [],
     originalBytes: 1000,
     optimizedBytes: 400,
-    variants: { optimized: "", thumb: "", social: "", square: "", cutout: "" },
+    variants: { optimized: "", thumb: "", social: "", square: "", cutout: "", extended: "", studio: "" },
     ...overrides,
   };
 }
