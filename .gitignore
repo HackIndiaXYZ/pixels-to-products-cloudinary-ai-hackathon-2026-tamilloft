@@ -42,3 +42,5 @@ next-env.d.ts
 
 # Keep the template, not the secrets
 !.env.example
+
+.vercel

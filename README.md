@@ -5,6 +5,10 @@
 Built for **Pixels to Products — Cloudinary AI Hackathon 2026** by **TamilLoft**.
 **Track 1 — AI Media Pipelines.**
 
+**Live demo: https://echo-ai-visibility.vercel.app**. Click *view a sample
+report* for an instant walkthrough, or enter a domain for a live audit (about
+three minutes).
+
 ## The problem
 
 Buyers now ask an AI what to buy before they ask Google, and AI answers, link
